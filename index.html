@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>Ansible</title>
+
+        <meta name="description" content="Devops nástroj Ansible">
+        <meta name="author" content="Michal Valoušek, michal@plovarna.cz">
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" href="css/reveal.min.css">
+        <link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+        <!-- For syntax highlighting -->
+        <link rel="stylesheet" href="plugin/highlight/styles/github.css">
+
+        <style>
+            .reveal {
+                background-color: #64c5c7;
+            }
+
+            .reveal a:not(.image),
+            .reveal a {
+                color:#000;
+            }
+            .reveal a:not(.image):hover,
+            .reveal a:hover {
+                color:#ff5850;
+            }
+
+            .reveal section img {
+                background:none;
+            }
+            .reveal .controls div.navigate-left,
+            .reveal .controls div.navigate-left.enabled {
+                border-right-color: #000;
+            }
+            .reveal .controls div.navigate-right,
+            .reveal .controls div.navigate-right.enabled {
+                border-left-color: #000;
+            }
+            .reveal .controls div.navigate-up,
+            .reveal .controls div.navigate-up.enabled {
+                border-bottom-color: #000;
+            }
+            .reveal .controls div.navigate-down,
+            .reveal .controls div.navigate-down.enabled {
+                border-top-color: #000;
+            }
+            .reveal .progress span {
+                background: #000;
+            }
+            .reveal pre {
+                margin-top: 2em;
+                margin-bottom: 2em;
+            }
+        </style>
+
+        <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+        <script>
+            if( window.location.search.match( /print-pdf/gi ) ) {
+                var link = document.createElement( 'link' );
+                link.rel = 'stylesheet';
+                link.type = 'text/css';
+                link.href = 'css/print/pdf.css';
+                document.getElementsByTagName( 'head' )[0].appendChild( link );
+            }
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <div class="slides">
+                <section class="noarrow">
+                    <img src="img/ansible_wordlogo_whiteonblack.png" style="padding-top:20px;border:none;box-shadow:none;"/>
+                    <p>
+                        <br>
+                        <br>
+                        <small><a href="http://tkalci.cz/">Tkalci na webu</a><br><a href="mailto:michal@plovarna.cz">Michal Valoušek</a> &mdash; <a href="http://twitter.com/msgre">@msgre</a><br><br>
+                            <a href="https://github.com/msgre/ansible-talk">https://github.com/msgre/ansible-talk</a>
+                        </small>
+                    </p>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Proč Ansible?</h2><br>
+                        <ol>
+                            <li>Jednoduchost</li>
+                            <li>Idempotency</li>
+                        </ol>
+                    </section>
+
+                    <section>
+                        <h3>Architektura Chefa</h3>
+                        <img src="img/topo_chef.png" style="padding-top:20px;border:none;box-shadow:none;" width="700"/>
+                    </section>
+
+                    <section>
+                        <h3>Architektura Ansible</h3>
+                        <img src="img/topo_ansible.png" style="padding-top:20px;border:none;box-shadow:none;" width="700"/>
+                    </section>
+                </section>
+
+                <section>
+                    <h2>K čemu Ansible?</h2><br>
+                    <ul>
+                        <li>Server provisioning</li>
+                        <li>Server orchestration</li>
+                        <li>Application deployment</li>
+                    </ul>
+                </section>
+
+<!-- INSTALACE ------------------------------------------------ -->
+                <section>
+                    <h1>Instalace</h1>
+                </section>
+
+                <section>
+                    <h2>Vagrant</h2>
+                    <pre class="shell"><code>
+    $ vagrant up control
+    $ vagrant up remote1
+                    </code></pre>
+                    <p><a href="https://gist.github.com/msgre/4f83a4c0bd540e1d0494">Vagrantfile</a></p>
+                </section>
+
+                <section>
+                    <img src="img/schema.png" style="padding-top:20px;border:none;box-shadow:none;"/>
+                </section>
+
+                <section>
+                    <h2>Prověrka</h2>
+                    <pre class="shell"><code>
+    $ vagrant ssh control
+
+    vagrant@control:~$ ssh vagrant@remote1.vbox
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Instalace</h2>
+                    <pre class="shell"><code>
+    $ vagrant ssh control
+
+    vagrant@control:~$ sudo apt-get install software-properties-common
+    vagrant@control:~$ sudo apt-add-repository -y ppa:ansible/ansible
+    vagrant@control:~$ sudo apt-get update
+    vagrant@control:~$ sudo apt-get install -y ansible
+                    </code></pre>
+                </section>
+
+                <section data-background="img/celebrate.gif">
+                </section>
+
+                <section>
+                    <h2>Ansible poprvé</h2>
+                    <pre class="shell"><code>
+    $ vagrant ssh control
+
+    vagrant@control:~$ sudo rm /etc/ansible/hosts
+    vagrant@control:~$ sudo ln -s /vagrant/hosts /etc/ansible/
+
+    vagrant@control:~$ ping remote1.vbox
+    vagrant@control:~$ ansible remote1.vbox -m ping
+
+    vagrant@control:~$ hostname
+    vagrant@control:~$ ansible remote1.vbox -m shell -a "hostname"
+                    </code></pre>
+                </section>
+
+<!-- ADHOC ---------------------------------------------------- -->
+
+                <section>
+                    <h1>Adhoc</h1>
+                </section>
+
+                <section>
+                    <h2>Adhoc příkazy</h2><br>
+                    <p style="font-family:monospace;text-align:center;">
+                        ansible &lt;pattern&gt; -m &lt;module&gt; -a &lt;arguments&gt;
+                    </p>
+
+                    <br>
+                        <pre class="fragment shell"><code>
+        ansible remote1.vbox -m ping
+        ansible remote1.vbox -m shell -a "hostname"
+                        </code></pre>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Adhoc příkazy</h2><br>
+                        <ul>
+                            <li>Operace nad filesystémem</li>
+                            <li>Správa balíčků</li>
+                            <li>Správa uživatelů</li>
+                            <li>Ovládání služeb</li>
+                            <li>Informace o mašinách</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h2>Operace nad filesystémem</h2><br>
+                        <pre class="shell"><code>
+ ansible prague -m copy -a "src=/etc/hosts dest=/tmp/hosts"
+ ansible prague -m file -a "dest=/path/to/c mode=755 state=directory"
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Správa balíčků</h2><br>
+                        <pre class="shell"><code>
+ ansible webservers -m apt -a "name=nginx state=present"
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Správa uživatelů</h2><br>
+                        <pre class="shell"><code>
+ ansible all -m user -a "name=karel password=&lt;crypted password&gt;"
+ ansible all -m user -a "name=toncin state=absent"
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Ovládání služeb</h2><br>
+                        <pre class="shell"><code>
+ ansible webservers -m service -a "name=httpd state=restarted"
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Informace o mašinách</h2><br>
+                        <pre class="shell"><code>
+ ansible all -m setup
+                        </code></pre>
+                    </section>
+
+                </section>
+
+                <section data-background="#ff5850">
+                    <h1>Zkouška</h1>
+                </section>
+
+                <section data-background="#ff5850">
+                    <h3>Co udělá následující příkaz?</h3><br>
+                    <pre class="shell"><code>
+
+
+         ansible remote1.vbox -m apt -a "name=nginx state=present"
+
+
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Parametry adhoc příkazů</h3>
+                    <pre class="shell"><code>
+ # prihlasi se na masinu jako uzivatel "username"
+ -u username
+
+ # prikazy na nodu bude provadet pres sudo
+ --sudo
+
+ # prikazy na nodu bude provadet pres sudo jako uzivatel "bohous"
+ -U bohous
+
+ # kdyz se neco kazi
+ -v, -vvv, -vvvv
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Patterny</h2><br>
+                </section>
+
+                <section>
+                    <p style="font-family:monospace;text-align:center;">
+                    ansible <strong>&lt;pattern&gt;</strong> -m &lt;module&gt; -a &lt;arguments&gt;
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Inventář</h2><br>
+                </section>
+
+                <section>
+                    <h3 style="font-family:monospace">/etc/ansible/hosts</h3><br>
+                    <pre><code>
+    vagrant@control:~$ sudo rm /etc/ansible/hosts
+    vagrant@control:~$ sudo ln -s /vagrant/hosts /etc/ansible/
+                    </code></pre>
+                </section>
+
+                <section>
+                    <section>
+                        <h3>Inventář</h3>
+                        <pre class="ini"><code>
+ remote1.vbox ansible_ssh_host=172.16.1.21
+ remote2.vbox ansible_ssh_host=172.16.1.22
+ remote3.vbox ansible_ssh_host=172.16.1.23
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h3>Skupiny v inventáři</h3>
+                        <pre class="ini"><code>
+ mail.example.com
+
+ [webservers]
+ foo.example.com
+ bar.example.com
+
+ [dbservers]
+ one.example.com
+ two.example.com
+ three.example.com
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h3>Proměnné v inventáři</h3>
+                        <pre class="ini"><code>
+ [atlanta]
+ host1
+ host2
+
+ [atlanta:vars]
+ ntp_server=ntp.atlanta.example.com
+ proxy=proxy.atlanta.example.com
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h3>Skupiny skupin</h3>
+                        <pre class="ini"><code>
+ [mezric]
+ host1
+ host2
+
+ [vsetin]
+ host2
+ host3
+
+ [valachy:children]
+ mezric
+ vsetin
+                        </code></pre>
+                    </section>
+
+                    <section>
+                        <h3>Dynamické inventáře</h3>
+                    </section>
+                </section>
+
+                <section>
+                    <h2>Zpět k patternům</h2>
+                </section>
+
+                <section>
+                    <h3>Příklady patternů</h3>
+                    <pre class="shell"><code>
+ # zacileni vsech stroju
+ ansible all -m ping
+
+ # zacileni stroju ve skupine A nebo B (OR, sjednoceni)
+ ansible webservers:dbservers -m ping
+
+ # zacileni webservers ale bez phoenix (NOT)
+ ansible webservers:!phoenix -m ping
+
+ # zacileni webservers a zaroven staging (AND, prunik)
+ ansible webservers:&amp;staging -m ping
+
+ # brutus kombinace
+ ansible webservers:dbservers:&amp;staging:!phoenix -m ping
+                    </code></pre>
+
+                </section>
+
+                <section>
+                    <h2>Moduly</h2>
+                </section>
+
+                <section>
+                    <p style="font-family:monospace;text-align:center;">
+                    ansible &lt;pattern&gt; <strong>-m &lt;module&gt;</strong> -a &lt;arguments&gt;
+                    </p>
+                </section>
+
+                <section>
+                    <h3>Více než 250 modulů</h3><br>
+                    <p><a href="http://docs.ansible.com/modules_by_category.html">Index v oficiální dokumentaci</a></p>
+                    <p><a href="/#/10">Příklady ze slajdů</a></p>
+                </section>
+
+                <section data-background="#ff5850">
+                    <h1>Přestávka</h1>
+                    <p>(pokud už nebyla)</p>
+                </section>
+
+                <section>
+                    <h1>Playbooky</h1>
+                </section>
+
+                <section>
+                    <section>
+                        <h3>Playbooky</h3>
+                            <pre class="yaml"><code>
+ ---
+ - hosts: remote1.vbox
+   sudo: true
+   vars:
+     static_dir: /var/static/
+
+   tasks:
+   - name: Install Nginx
+     apt: pkg=nginx state=present
+
+   - name: Prepare directory for static content
+     file: path={{static_dir}} state=directory
+
+   # ...
+                            </code></pre>
+                            <p>Zápis v <a href="http://en.wikipedia.org/wiki/YAML">YAML</a> formátu</p>
+                    </section>
+
+                    <section>
+                        <h3>Více playů v playbooku</h3>
+                            <pre class="yaml"><code>
+ ---
+ - hosts: remote1.vbox
+   sudo: true
+   tasks:
+   - name: Install Nginx
+     apt: pkg=nginx state=present
+
+
+ - hosts: remote2.vbox
+   sudo: true
+   tasks:
+   - name: Install Vim
+     apt: pkg=vim state=present
+                            </code></pre>
+                    </section>
+                </section>
+
+                <section>
+                    <h3>Spouštění playbooku</h3>
+                        <pre class="shell"><code>
+    vagrant@control:~$ ansible-playbook nginx1.yml
+                        </code></pre>
+                </section>
+
+                <section data-background="#ff5850">
+                    <h1>Ukázka</h1>
+                </section>
+
+                <section>
+                    <h2>Pokročilejší konstrukce</h2>
+                </section>
+
+                <section>
+                    <h3>Šablony</h3>
+                    <p>Šablona <code>template/foo.cfg.j2</code> (syntaxe <a href="http://jinja.pocoo.org/">Jinja2</a>):</p>
+                        <pre class="yaml"><code>
+ My amp goes to {{ max_amp_value }}
+                        </code></pre>
+
+                        <p>Vygenerování šablony v playi:</p>
+                        <pre class="yaml"><code>
+ template: src=foo.cfg.j2 dest=/etc/kangaroo/foo.cfg
+                        </code></pre>
+                </section>
+
+
+                <section>
+                    <h3>Podmíněné tasky</h3>
+                        <pre class="yaml"><code>
+ - name: "shutdown Debian flavored systems"
+   command: /sbin/shutdown -t now
+   when: ansible_os_family == "Debian"
+                        </code></pre>
+                </section>
+
+                <section>
+                    <h3>Smyčky</h3>
+                        <pre class="yaml"><code>
+ - name: add several users
+   user: name={{ item }} state=present groups=wheel
+   with_items:
+   - testuser1
+   - testuser2
+                        </code></pre>
+                </section>
+
+                <section>
+                    <h3>Handlery</h3>
+                        <pre><code class="yaml">
+ tasks:
+ - name: ensure apache is at the latest version
+   yum: pkg=httpd state=latest
+
+ - name: write the apache config file
+   template: src=/srv/httpd.j2 dest=/etc/httpd.conf
+   notify:
+   - restart apache
+
+ # ...
+
+ handlers:
+ - name: restart apache
+   service: name=httpd state=restarted
+                        </code></pre>
+                </section>
+
+
+                <section>
+                    <h3>Includes</h3>
+                        <pre><code>
+ tasks:
+ - include: tasks/foo.yml
+ - include: tasks/bar.yml var1=1 var2=3
+                        </code></pre>
+                </section>
+
+                <section>
+                    <h3>Tagování tasků</h3>
+                        <pre class="text"><code>
+ tasks:
+ - yum: name={{item}} state=installed
+   with_items:
+   - httpd
+   - memcached
+   tags:
+   - packages
+                        </code></pre>
+
+                        <pre class="text"><code>
+ $ ansible-playbook example.yml --tags "configuration,packages"
+                        </code></pre>
+
+                </section>
+
+                <section>
+                    <h3>Vypnutí <span style="font-family:monospace">gather_facts</span></h3>
+                        <pre class="yaml"><code>
+ ---
+ - name: Init provisioning infrastructure
+   hosts: 127.0.0.1
+   connection: local
+   gather_facts: no
+                        </code></pre>
+                </section>
+
+                <section>
+                    <h3>Čekačky</h3>
+                        <pre class="yaml"><code>
+ - name: Wait for port 8000
+   wait_for: port=8000 delay=10
+                        </code></pre>
+                </section>
+
+                <section>
+                    <h3>Ušpiňte si ruce!</h3><br><br>
+                    <p><a href="https://github.com/ansible/ansible-examples">Ansible examples</a></h3>
+                </section>
+
+                <section>
+                    <h1>Role</h1>
+                </section>
+
+                <section>
+                    <h3>Adresářová struktura</h3>
+                    <pre class="text"><code>
+ production                # inventory file for production servers
+ stage                     # inventory file for stage environment
+
+ group_vars/
+    group1                 # here we assign variables to particular groups
+ host_vars/
+    hostname1              # if systems need specific variables, put them here
+
+ site.yml                  # master playbook
+
+ roles/
+     common/               # this hierarchy represents a "role"
+         tasks/            #
+         handlers/         #
+         templates/        # files for use with the template resource
+         files/            #
+         vars/             #
+         defaults/         #
+         meta/             #
+     webtier/              # same kind of structure as "common" was above, done for the webtier role
+     monitoring/           # ""
+                    </code></pre>
+                    <p><a href="http://docs.ansible.com/playbooks_best_practices.html#directory-layout">Directory layout</a></p>
+                </section>
+
+                <section>
+                    <h3>Používání rolí v playbooku</h3>
+                    <pre><code class="yaml">
+ ---
+ - hosts: webservers
+   roles:
+   - common
+   - webservers
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Díky za pozornost</h3><br>
+                    <div style="font-size:50%; opacity:.6">
+                        <p><strong>Zdroje využité v prezentaci</strong></p>
+                        <p>
+                            <a href="http://docs.ansible.com/">http://docs.ansible.com/</a><br>
+                            <a href="https://speakerdeck.com/slok/ansible-all-the-things">https://speakerdeck.com/slok/ansible-all-the-things</a><br>
+                            <a href="http://www.slideshare.net/chuparkoff/ansible-allthethings">http://www.slideshare.net/chuparkoff/ansible-allthethings</a><br>
+                            <a href="http://www.slideshare.net/jimi-c/ansible-sf2014">http://www.slideshare.net/jimi-c/ansible-sf2014</a><br>
+                            <a href="http://giphy.com/gifs/pokemon-celebrate-cheer-MpHGtb8s1gwow">http://giphy.com/gifs/pokemon-celebrate-cheer-MpHGtb8s1gwow</a>
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.min.js"></script>
+        <script src="jquery.min.js"></script>
+
+        <script>
+
+            // Full list of configuration options available here:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                theme: 'simple',
+                transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() {
+                        $(document).ready(function(){
+                            $('code').each(function(i, e) {hljs.highlightBlock(e)});
+                        });
+                        //hljs.initHighlightingOnLoad();
+                    } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+
+        </script>
+
+    </body>
+</html>
